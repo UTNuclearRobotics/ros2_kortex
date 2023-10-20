@@ -116,7 +116,13 @@ If the bug fix you need isn't in a released version or If you want to build this
 
 4. To simulate the robot with ignition or gazebo make sure to pull and build additional packages:
    ```
-   vcs import src --skip-existing --input src/ros2_kortex/simulation.repos
+   #For ros-humble, run:
+    vcs import src --skip-existing --input src/ros2_kortex/simulation.humble.repos 
+
+   # For other ros2 distros, run: 
+    vcs import src --skip-existing --input src/ros2_kortex/simulation.repos 
+
+   # Build packages:
    rosdep install --ignore-src --from-paths src -y -r
    colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release
    source install/setup.bash
