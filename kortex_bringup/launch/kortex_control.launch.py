@@ -13,6 +13,7 @@
 # limitations under the License.
 #
 # Authors: Marq Rasmussen, Denis Stogl
+# Edited: Emmanuel Akita
 
 from launch import LaunchDescription
 from launch.actions import (
@@ -51,6 +52,7 @@ def launch_setup(context, *args, **kwargs):
     robot_traj_controller = LaunchConfiguration("robot_controller")
     robot_pos_controller = LaunchConfiguration("robot_pos_controller")
     robot_hand_controller = LaunchConfiguration("robot_hand_controller")
+    robot_admittance_controller = LaunchConfiguration("robot_admittance_controller")
     fault_controller = LaunchConfiguration("fault_controller")
     launch_rviz = LaunchConfiguration("launch_rviz")
     use_internal_bus_gripper_comm = LaunchConfiguration("use_internal_bus_gripper_comm")
@@ -177,6 +179,34 @@ def launch_setup(context, *args, **kwargs):
         condition=IfCondition(use_internal_bus_gripper_comm),
     )
 
+    robot_admittance_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=[
+            robot_admittance_controller,
+            "--inactive",
+            "-c",
+            "/controller_manager",
+        ],
+    )
+
+    force_torque_sensor_broadcaster_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=[
+            "force_torque_sensor_broadcaster",
+            "--controller-manager",
+            "controller_manager",
+        ],
+    )
+
+    faked_forces_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        # condition=IfCondition(fake_sensor_commands),
+        arguments=["faked_forces_controller", "-c", "/controller_manager"],
+    )
+    
     fault_controller_spawner = Node(
         package="controller_manager",
         executable="spawner",
@@ -191,6 +221,9 @@ def launch_setup(context, *args, **kwargs):
         robot_traj_controller_spawner,
         robot_pos_controller_spawner,
         robot_hand_controller_spawner,
+        robot_admittance_controller_spawner,
+        force_torque_sensor_broadcaster_spawner,
+        faked_forces_controller_spawner,
         fault_controller_spawner,
     ]
 
@@ -202,7 +235,9 @@ def generate_launch_description():
     # Robot specific arguments
     declared_arguments.append(
         DeclareLaunchArgument(
-            "robot_type", description="Type/series of robot.", choices=["gen3", "gen3_lite"]
+            "robot_type",
+            description="Type/series of robot.",
+            choices=["gen3", "gen3_lite"],
         )
     )
     declared_arguments.append(DeclareLaunchArgument("dof", description="DoF of robot."))
@@ -331,13 +366,22 @@ def generate_launch_description():
     )
     declared_arguments.append(
         DeclareLaunchArgument(
+            "robot_admittance_controller",
+            default_value="admittance_controller",
+            description="Robot controller to start.",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
             "fault_controller",
             default_value="fault_controller",
             description="Name of the 'fault controller.",
         )
     )
     declared_arguments.append(
-        DeclareLaunchArgument("launch_rviz", default_value="true", description="Launch RViz?")
+        DeclareLaunchArgument(
+            "launch_rviz", default_value="true", description="Launch RViz?"
+        )
     )
     declared_arguments.append(
         DeclareLaunchArgument(
@@ -368,4 +412,6 @@ def generate_launch_description():
         )
     )
 
-    return LaunchDescription(declared_arguments + [OpaqueFunction(function=launch_setup)])
+    return LaunchDescription(
+        declared_arguments + [OpaqueFunction(function=launch_setup)]
+    )

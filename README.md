@@ -114,6 +114,11 @@ If the bug fix you need isn't in a released version or If you want to build this
    source install/setup.bash
    ```
 
+vcs import src --skip-existing --input src/ros2_kortex/ft_pub.repos 
+vcs import src --skip-existing --input src/ros2_ati_ft_sensor_ws/ft_pub.repos
+rosdep install --ignore-src --from-paths src -y -r
+sudo apt-get install libedit-dev libncurses5
+
 4. To simulate the robot with ignition or gazebo make sure to pull and build additional packages:
    ```
    #For ros-humble, run:

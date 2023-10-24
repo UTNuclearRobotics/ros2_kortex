@@ -16,6 +16,18 @@ controller_manager:
 
     fault_controller:
       type: picknik_reset_fault_controller/PicknikResetFaultController
+    
+    force_torque_sensor_broadcaster:
+      type: force_torque_sensor_broadcaster/ForceTorqueSensorBroadcaster
+
+    net_ft_diagnostic_broadcaster:
+      type: net_ft_diagnostic_broadcaster/NetFTDiagnosticBroadcaster
+
+    faked_forces_controller:
+      type: forward_command_controller/MultiInterfaceForwardCommandController
+
+    admittance_controller: 
+      type: admittance_controller/AdmittanceController   
 
 joint_trajectory_controller:
   ros__parameters:
@@ -42,7 +54,7 @@ joint_trajectory_controller:
 
 twist_controller:
   ros__parameters:
-    joint: tcp
+    joint: joint_7 #tcp
     interface_names:
       - twist.linear.x
       - twist.linear.y
@@ -56,3 +68,149 @@ robotiq_gripper_controller:
     default: true
     joint: robotiq_85_left_knuckle_joint
     allow_stalling: true
+
+force_torque_sensor_broadcaster:
+  ros__parameters:
+    sensor_name: ati_ft_sensor
+    state_interface_names:
+        - force.x
+        - force.y
+        - force.z
+        - torque.x
+        - torque.y
+        - torque.z
+    frame_id: end_effector_link
+    additional_frames_to_publish: [base_link]
+    topic_name: ft_data 
+    
+    sensor_filter_chain:
+      filter1:
+        type: control_filters/LowPassFilterWrench
+        name: low_pass_filter
+        params:
+          sampling_frequency: 200.0
+          damping_frequency: 50.0
+          damping_intensity: 1.0
+          divider: 1
+
+      filter2:
+        type: control_filters/GravityCompensationWrench
+        name: tool_gravity_compensation
+        params:
+          CoG:
+            x: 0.0
+            y: 0.0
+            z: 0.1
+          force: 2.51        # mass * 9.81
+          force_frame: end_effector_link
+          sensor_frame: ft_frame
+          world_frame: base_link 
+
+admittance_controller:
+  ros__parameters:
+    joints: 
+      - joint_1
+      - joint_2
+      - joint_3
+      - joint_4
+      - joint_5
+      - joint_6
+      - joint_7
+    command_interfaces:
+      - position
+      - velocity
+    state_interfaces:
+      - position
+      - velocity 
+    chainable_command_interfaces:
+      - position
+      - velocity 
+
+    kinematics:
+      plugin_name: kinematics_interface_kdl/KinematicsInterfaceKDL  
+      plugin_package: kinematics_interface  
+      base: base_link # Assumed to be stationary
+      tip: end_effector_link   
+      group_name: manipulator 
+      alpha: 0.0001
+
+    ft_sensor:
+      name: ati_ft_sensor 
+      frame:
+        id: end_effector_link  # Wrench measurements are in this frame
+        external: false # The force torque frame exists within the URDF kinematic chain
+      filter_coefficient: 0.1
+
+    control:
+      frame:
+        id: base_link # Admittance calcs (displacement etc) are done in this frame. Usually the tool or end-effector
+        external: false  
+
+    fixed_world_frame:
+      frame: # Gravity points down (neg. Z) in this frame
+        id: base_link  
+        external: false  
+
+    gravity_compensation: 
+      frame:
+        id: end_effector_link
+        external: false
+ 
+      CoG: # specifies the center of gravity of the end effector
+        pos: # Data from the Robotiq 2F-85 & 2F-140 Instruction Manual
+          - 0.0 # x
+          - 0.0 # y
+          - 0.058 # z, distance below the mounting flange
+        force: 9.07 #mass * 9.81
+      
+    admittance:
+      selected_axes:
+        - true # x
+        - true # y
+        - true # z
+        - true # rx
+        - true # ry
+        - true # rz
+
+      #Mass, damping_ratio, stiffness and joint_damping should be tuned!
+      # Having ".0" at the end is MUST, otherwise there is a loading error
+      # F = M*a + D*v + S*(x - x_d)
+      mass:
+        - 2.0   
+        - 2.0  
+        - 2.0  
+        - 0.05  
+        - 0.05  
+        - 0.05  
+
+      damping_ratio: # damping can be used instead: zeta = D / (2 * sqrt( M * S ))
+        - 3.0 # x
+        - 3.0 # y
+        - 3.0 # z
+        - 3.0 # rx
+        - 3.0 # ry
+        - 3.0 # rz
+
+      stiffness:
+        - 50.0 # x
+        - 50.0 # y
+        - 50.0 # z
+        - 1.0 # rx
+        - 1.0 # ry
+        - 1.0 # rz
+
+      joint_damping: 0.0
+    
+    enable_parameter_update_without_reactivation: true
+
+faked_forces_controller:
+  ros__parameters:
+    joint: ati_ft_sensor  
+    interface_names:
+      - force.x
+      - force.y
+      - force.z
+      - torque.x
+      - torque.y
+      - torque.z
+  

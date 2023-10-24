@@ -37,6 +37,7 @@ def launch_setup(context, *args, **kwargs):
     launch_rviz = LaunchConfiguration("launch_rviz")
     use_sim_time = LaunchConfiguration("use_sim_time")
     use_internal_bus_gripper_comm = LaunchConfiguration("use_internal_bus_gripper_comm")
+    robot_admittance_controller = LaunchConfiguration("robot_admittance_controller")
 
     launch_arguments = {
         "robot_ip": robot_ip,
@@ -50,13 +51,19 @@ def launch_setup(context, *args, **kwargs):
     }
 
     moveit_config = (
-        MoveItConfigsBuilder("gen3", package_name="kinova_gen3_7dof_robotiq_2f_85_moveit_config")
+        MoveItConfigsBuilder(
+            "gen3", package_name="kinova_gen3_7dof_robotiq_2f_85_moveit_config"
+        )
         .robot_description(mappings=launch_arguments)
-        .planning_pipelines(pipelines=["ompl", "chomp", "pilz_industrial_motion_planner"])
+        .planning_pipelines(
+            pipelines=["ompl", "chomp", "pilz_industrial_motion_planner"]
+        )
         .to_moveit_configs()
     )
 
-    moveit_config.moveit_cpp.update({"use_sim_time": use_sim_time.perform(context) == "true"})
+    moveit_config.moveit_cpp.update(
+        {"use_sim_time": use_sim_time.perform(context) == "true"}
+    )
 
     move_group_node = Node(
         package="moveit_ros_move_group",
@@ -119,6 +126,24 @@ def launch_setup(context, *args, **kwargs):
         # condition=IfCondition(use_internal_bus_gripper_comm),
     )
 
+    robot_admittance_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=[
+            robot_admittance_controller,
+            "--inactive",
+            "-c",
+            "/controller_manager",
+        ],
+    )
+
+    faked_forces_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        # condition=IfCondition(fake_sensor_commands),
+        arguments=["faked_forces_controller", "-c", "/controller_manager"],
+    )
+
     fault_controller_spawner = Node(
         package="controller_manager",
         executable="spawner",
@@ -171,6 +196,8 @@ def launch_setup(context, *args, **kwargs):
         robot_traj_controller_spawner,
         robot_pos_controller_spawner,
         robot_hand_controller_spawner,
+        robot_admittance_controller_spawner,
+        faked_forces_controller_spawner,
         fault_controller_spawner,
         move_group_node,
         static_tf,
@@ -231,7 +258,18 @@ def generate_launch_description():
         )
     )
     declared_arguments.append(
-        DeclareLaunchArgument("launch_rviz", default_value="true", description="Launch RViz?")
+        DeclareLaunchArgument(
+            "robot_admittance_controller",
+            default_value="admittance_controller",
+            description="Robot controller to start.",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "launch_rviz", default_value="true", description="Launch RViz?"
+        )
     )
 
-    return LaunchDescription(declared_arguments + [OpaqueFunction(function=launch_setup)])
+    return LaunchDescription(
+        declared_arguments + [OpaqueFunction(function=launch_setup)]
+    )

@@ -1,0 +1,17 @@
+repositories:
+  ati_ft_sensor:
+    type: git
+    url: https://github.com/UTNuclearRobotics/ati_ft_sensor.git
+    version: sensor_pub_devel
+
+  mpi_cmake_modules:
+    type: git
+    url: https://github.com/machines-in-motion/mpi_cmake_modules.git
+    version: master
+  
+  real_time_tools:
+    type: git
+    url: https://github.com/machines-in-motion/real_time_tools.git 
+    version: master
+
+  
