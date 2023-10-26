@@ -108,20 +108,15 @@ If the bug fix you need isn't in a released version or If you want to build this
 3. Pull relevant packages, install dependencies, compile, and source the workspace by using:
    ```
    cd $COLCON_WS
-   git clone https://github.com/PickNikRobotics/ros2_kortex.git src/ros2_kortex
+   git clone --branch add_controllers https://github.com/UTNuclearRobotics/ros2_kortex.git src/ros2_kortex
    rosdep install --ignore-src --from-paths src -y -r
    colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release
    source install/setup.bash
    ```
 
-vcs import src --skip-existing --input src/ros2_kortex/ft_pub.repos 
-vcs import src --skip-existing --input src/ros2_ati_ft_sensor_ws/ft_pub.repos
-rosdep install --ignore-src --from-paths src -y -r
-sudo apt-get install libedit-dev libncurses5
-
 4. To simulate the robot with ignition or gazebo make sure to pull and build additional packages:
    ```
-   #For ros-humble, run:
+   # For ros-humble, run:
     vcs import src --skip-existing --input src/ros2_kortex/simulation.humble.repos 
 
    # For other ros2 distros, run: 
@@ -132,6 +127,24 @@ sudo apt-get install libedit-dev libncurses5
    colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release
    source install/setup.bash
    ```
+   
+5. To run the robot with an admittance controller in simulation, pull and build additional packages: 
+    ```
+    vcs import src --skip-existing --input src/ros2_kortex/ft_pub.repos 
+    sudo apt-get install libedit-dev libncurses5
+
+    # Delete the default control_demos package that comes from initial build
+    rm -rf ros2_control_demos/
+
+    # Checkout the repositories from admittance_controller.repos file:
+    wget https://raw.githubusercontent.com/pac48/ros2_control_demos/add-admittance-controller/admittance_demo/admittance_controller.repos
+    vcs import --input admittance_controller.repos .
+    rosdep install --from-paths . -y -i --ignore-src
+
+    # Build packages:
+   colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release
+   source install/setup.bash
+    ```
 
 ## Simulation Issues
 
@@ -224,6 +237,17 @@ and to use MoveIt to command the robot:
 ```bash
 ros2 launch kinova_gen3_7dof_robotiq_2f_85_moveit_config sim.launch.py \
   use_sim_time:=true
+```
+
+To run the simulation with the admittance controller, launch the ati force-torque sensor,
+
+```bash 
+ros2 launch ati_ft_sensor ati_ft_sensor.launch.py
+```
+
+and activate the admittance controller:
+```bash
+ros2 control switch_controllers --activate admittance_controller --deactivate joint_trajectory_controller
 ```
 
 To work with a physical robot and generate/execute paths with MoveIt run the following:

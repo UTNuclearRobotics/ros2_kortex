@@ -20,14 +20,12 @@ controller_manager:
     force_torque_sensor_broadcaster:
       type: force_torque_sensor_broadcaster/ForceTorqueSensorBroadcaster
 
-    net_ft_diagnostic_broadcaster:
-      type: net_ft_diagnostic_broadcaster/NetFTDiagnosticBroadcaster
-
+    admittance_controller: 
+      type: admittance_controller/AdmittanceController 
+    
     faked_forces_controller:
       type: forward_command_controller/MultiInterfaceForwardCommandController
 
-    admittance_controller: 
-      type: admittance_controller/AdmittanceController   
 
 joint_trajectory_controller:
   ros__parameters:
@@ -54,7 +52,7 @@ joint_trajectory_controller:
 
 twist_controller:
   ros__parameters:
-    joint: joint_7 #tcp
+    joint: joint_7 
     interface_names:
       - twist.linear.x
       - twist.linear.y
@@ -72,13 +70,6 @@ robotiq_gripper_controller:
 force_torque_sensor_broadcaster:
   ros__parameters:
     sensor_name: ati_ft_sensor
-    state_interface_names:
-        - force.x
-        - force.y
-        - force.z
-        - torque.x
-        - torque.y
-        - torque.z
     frame_id: end_effector_link
     additional_frames_to_publish: [base_link]
     topic_name: ft_data 
@@ -139,11 +130,11 @@ admittance_controller:
       frame:
         id: end_effector_link  # Wrench measurements are in this frame
         external: false # The force torque frame exists within the URDF kinematic chain
-      filter_coefficient: 0.1
+      filter_coefficient: 0.005
 
     control:
       frame:
-        id: base_link # Admittance calcs (displacement etc) are done in this frame. Usually the tool or end-effector
+        id: end_effector_link # Admittance calcs (displacement etc) are done in this frame. Usually the tool or end-effector
         external: false  
 
     fixed_world_frame:
@@ -156,7 +147,7 @@ admittance_controller:
         id: end_effector_link
         external: false
  
-      CoG: # specifies the center of gravity of the end effector
+      CoG: # Specifies the center of gravity of the end effector
         pos: # Data from the Robotiq 2F-85 & 2F-140 Instruction Manual
           - 0.0 # x
           - 0.0 # y
@@ -199,7 +190,7 @@ admittance_controller:
         - 1.0 # ry
         - 1.0 # rz
 
-      joint_damping: 0.0
+      joint_damping: 1.0
     
     enable_parameter_update_without_reactivation: true
 
