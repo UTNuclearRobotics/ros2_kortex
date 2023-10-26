@@ -38,6 +38,12 @@ def launch_setup(context, *args, **kwargs):
     use_sim_time = LaunchConfiguration("use_sim_time")
     use_internal_bus_gripper_comm = LaunchConfiguration("use_internal_bus_gripper_comm")
     robot_admittance_controller = LaunchConfiguration("robot_admittance_controller")
+    # Netft arguments
+    ip_address = LaunchConfiguration("ip_address")
+    rdt_sampling_rate = LaunchConfiguration("rdt_sampling_rate")
+    sensor_type = LaunchConfiguration("sensor_type")
+    internal_filter_rate = LaunchConfiguration("internal_filter_rate")
+    use_hardware_biasing = LaunchConfiguration("use_hardware_biasing")
 
     launch_arguments = {
         "robot_ip": robot_ip,
@@ -48,6 +54,11 @@ def launch_setup(context, *args, **kwargs):
         "gripper_max_velocity": gripper_max_velocity,
         "gripper_max_force": gripper_max_force,
         "use_internal_bus_gripper_comm": use_internal_bus_gripper_comm,
+        "ip_address": ip_address,
+        "rdt_sampling_rate": rdt_sampling_rate,
+        "sensor_type": sensor_type,
+        "internal_filter_rate": internal_filter_rate,
+        "use_hardware_biasing": use_hardware_biasing,
     }
 
     moveit_config = (
@@ -267,6 +278,44 @@ def generate_launch_description():
     declared_arguments.append(
         DeclareLaunchArgument(
             "launch_rviz", default_value="true", description="Launch RViz?"
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            name="sensor_type",
+            default_value="ati",
+            description="Type of the F/T sensor.",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            name="ip_address",
+            default_value="192.168.1.84",
+            description="F/T Sensor IP adress",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            name="rdt_sampling_rate",
+            default_value="500",
+            description="The RDT sampling rate.",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            name="internal_filter_rate",
+            default_value="0",
+            description=(
+                "The internal low pass filter rate, "
+                "refer for specific values to the sensor manuals.",
+            ),
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            name="use_hardware_biasing",
+            default_value="false",
+            description="Whether to use built-in sensor zeroing",
         )
     )
 

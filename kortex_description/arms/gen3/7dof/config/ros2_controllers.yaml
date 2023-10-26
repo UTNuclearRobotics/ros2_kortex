@@ -69,7 +69,7 @@ robotiq_gripper_controller:
 
 force_torque_sensor_broadcaster:
   ros__parameters:
-    sensor_name: ati_ft_sensor
+    sensor_name: tcp_fts_sensor 
     frame_id: end_effector_link
     additional_frames_to_publish: [base_link]
     topic_name: ft_data 
@@ -126,7 +126,7 @@ admittance_controller:
       alpha: 0.0001
 
     ft_sensor:
-      name: ati_ft_sensor 
+      name: tcp_fts_sensor  
       frame:
         id: end_effector_link  # Wrench measurements are in this frame
         external: false # The force torque frame exists within the URDF kinematic chain
@@ -190,13 +190,13 @@ admittance_controller:
         - 1.0 # ry
         - 1.0 # rz
 
-      joint_damping: 1.0
+      joint_damping: 10.0
     
     enable_parameter_update_without_reactivation: true
 
 faked_forces_controller:
   ros__parameters:
-    joint: ati_ft_sensor  
+    joint: tcp_fts_sensor   
     interface_names:
       - force.x
       - force.y

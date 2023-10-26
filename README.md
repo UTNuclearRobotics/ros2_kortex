@@ -128,23 +128,42 @@ If the bug fix you need isn't in a released version or If you want to build this
    source install/setup.bash
    ```
    
-5. To run the robot with an admittance controller in simulation, pull and build additional packages: 
-    ```
-    vcs import src --skip-existing --input src/ros2_kortex/ft_pub.repos 
-    sudo apt-get install libedit-dev libncurses5
+5. To run the robot with an admittance controller in simulation, there are 2 main methods. Method 1 dynamically loads a dedicated ati-ft hardware interface at runtime to interact with the admittance controller, and works for both the physcial robot and the simulated visualized robot. Method 2 uses the generic, mock hardware interface to interact with the admittance controller. The drawback of method 1 is that it requires a non-trivial hardware interface to be written for every sensor, but has the advantage of interfacing easily with the physical hardware. The drawback of method 2 is that it has the difficulty interfacing with the physical hardware, but is trivial for quickly prototyping and testing a (new) force-torque sensor in simulation. Pick the appropriate method based on your needs. 
 
-    # Delete the default control_demos package that comes from initial build
-    rm -rf ros2_control_demos/
+    To use method 1, pull and build additional packages: 
+      ```
+        cd $COLCON_WS/src
+        git clone --branch humble https://github.com/gbartyzel/ros2_net_ft_driver.git
+        sudo apt install -y libasio-dev libcurlpp-dev
+        cd $COLCON_WS
+        rosdep install --ignore-src --from-paths src -y -r --rosdistro humble
 
-    # Checkout the repositories from admittance_controller.repos file:
-    wget https://raw.githubusercontent.com/pac48/ros2_control_demos/add-admittance-controller/admittance_demo/admittance_controller.repos
-    vcs import --input admittance_controller.repos .
-    rosdep install --from-paths . -y -i --ignore-src
+        # Build packages:
+        colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release
+        source install/setup.bash
+      ```
 
-    # Build packages:
-   colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release
-   source install/setup.bash
-    ```
+    To use method 2, pull and build additional packages:   
+      ```
+        vcs import src --skip-existing --input src/ros2_kortex/ft_pub.repos 
+        sudo apt-get install libedit-dev libncurses5
+
+        # Delete the default control_demos package that comes from initial build
+        rm -rf ros2_control_demos/
+      ```
+
+    Now, pull and build the admittance controller. 
+      ```
+        cd $COLCON_WS/src
+        wget https://raw.githubusercontent.com/pac48/ros2_control_demos/add-admittance-controller/admittance_demo/admittance_controller.repos
+        vcs import --input admittance_controller.repos .
+        cd $COLCON_WS
+        rosdep install --from-paths . -y -i --ignore-src
+
+        # Build packages:
+        colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release
+        source install/setup.bash
+        ```
 
 ## Simulation Issues
 

@@ -57,6 +57,12 @@ def launch_setup(context, *args, **kwargs):
     launch_rviz = LaunchConfiguration("launch_rviz")
     use_internal_bus_gripper_comm = LaunchConfiguration("use_internal_bus_gripper_comm")
     gripper_joint_name = LaunchConfiguration("gripper_joint_name")
+    # Netft arguments
+    ip_address = LaunchConfiguration("ip_address")
+    rdt_sampling_rate = LaunchConfiguration("rdt_sampling_rate")
+    sensor_type = LaunchConfiguration("sensor_type")
+    internal_filter_rate = LaunchConfiguration("internal_filter_rate")
+    use_hardware_biasing = LaunchConfiguration("use_hardware_biasing")
 
     robot_description_content = Command(
         [
@@ -101,6 +107,22 @@ def launch_setup(context, *args, **kwargs):
             " ",
             "gripper_joint_name:=",
             gripper_joint_name,
+            " ",
+            # Netft arguments
+            "ip_address:=",
+            ip_address,
+            " ",
+            "rdt_sampling_rate:=",
+            rdt_sampling_rate,
+            " ",
+            "sensor_type:=",
+            sensor_type,
+            " ",
+            "internal_filter_rate:=",
+            internal_filter_rate,
+            " ",
+            "use_hardware_biasing:=",
+            use_hardware_biasing,
             " ",
         ]
     )
@@ -206,7 +228,7 @@ def launch_setup(context, *args, **kwargs):
         # condition=IfCondition(fake_sensor_commands),
         arguments=["faked_forces_controller", "-c", "/controller_manager"],
     )
-    
+
     fault_controller_spawner = Node(
         package="controller_manager",
         executable="spawner",
@@ -409,6 +431,44 @@ def generate_launch_description():
             "gripper_joint_name",
             default_value="finger_joint",
             description="Max force for gripper commands",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            name="sensor_type",
+            default_value="ati",
+            description="Type of the F/T sensor.",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            name="ip_address",
+            default_value="192.168.1.84",
+            description="F/T Sensor IP adress",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            name="rdt_sampling_rate",
+            default_value="500",
+            description="The RDT sampling rate.",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            name="internal_filter_rate",
+            default_value="0",
+            description=(
+                "The internal low pass filter rate, "
+                "refer for specific values to the sensor manuals.",
+            ),
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            name="use_hardware_biasing",
+            default_value="false",
+            description="Whether to use built-in sensor zeroing",
         )
     )
 
