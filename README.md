@@ -258,15 +258,33 @@ ros2 launch kinova_gen3_7dof_robotiq_2f_85_moveit_config sim.launch.py \
   use_sim_time:=true
 ```
 
-To run the simulation with the admittance controller, launch the ati force-torque sensor,
-
+To run the admittance controller using method 1, launch the robot with the following args
 ```bash 
-ros2 launch ati_ft_sensor ati_ft_sensor.launch.py
+  # Use the physical Net F/T sensor in simulation
+  fake_sensor_commands:=false 
+  ip_address:=<your-netbox-ip>
+  use_fake_hardware:=true
+
+  # Use the physical F/T on the real hardware 
+  fake_sensor_commands:=false 
+  ip_address:=<your-netbox-ip>
+  use_fake_hardware:=false
+
+  # Use a simulated wrench node in simulation. You will have to launch your own node, or perhaps use a node that publishes F/T data on a /faked_forces_controller/commands topic
+  fake_sensor_commands:=true 
+  ip_address:=<your-netbox-ip>
+  use_fake_hardware:=true
 ```
 
 and activate the admittance controller:
 ```bash
 ros2 control switch_controllers --activate admittance_controller --deactivate joint_trajectory_controller
+```
+
+To run the simulation using method 2 with the admittance controller, use the appropriate args above to launch the robot, activate the admittance controller (above), and launch the ati force-torque sensor as follows:
+
+```bash 
+ros2 launch ati_ft_sensor ati_ft_sensor.launch.py
 ```
 
 To work with a physical robot and generate/execute paths with MoveIt run the following:
