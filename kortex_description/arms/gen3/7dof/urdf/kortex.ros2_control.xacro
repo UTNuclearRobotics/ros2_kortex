@@ -202,22 +202,24 @@
   <xacro:arg name="sensor_type" default="ati"/>
   <xacro:arg name="ip_address" default="192.168.1.84"/>
   <xacro:arg name="rdt_sampling_rate" default="500"/>
-  <xacro:arg name="internal_filter_rate" default="false"/>
+  <xacro:arg name="internal_filter_rate" default="0"/>
   <xacro:arg name="use_hardware_biasing" default="false"/>
   <xacro:arg name="prefix" default=""/>
 
-  <!-- Import netft macros -->
-    <xacro:include filename="$(find net_ft_description)/urdf/net_ft_sensor_macro.urdf.xacro" />
+  <!-- Import Net FT  macros -->
+  <xacro:include filename="$(find net_ft_description)/urdf/net_ft_sensor_macro.urdf.xacro" />
  
-  <!-- Force Sensor -->
-  <xacro:net_ft_sensor parent="end_effector_link" 
-  prefix="$(arg prefix)" 
-  ip_address="$(arg ip_address)" 
-  rdt_sampling_rate="$(arg rdt_sampling_rate)" 
-  sensor_type="$(arg sensor_type)" 
-  internal_filter_rate="$(arg internal_filter_rate)" 
-  use_hardware_biasing="$(arg use_hardware_biasing)">
-  <!-- Create link fixed to the "world" -->
-  <link name="world" />
-  </xacro:net_ft_sensor>
+  <!-- Force Sensor: Allow the F/T sensor data to be available to both the sim and real hardware -->
+  <xacro:unless value="${fake_sensor_commands}">
+    <xacro:net_ft_sensor parent="end_effector_link" 
+      prefix="$(arg prefix)" 
+      ip_address="$(arg ip_address)" 
+      rdt_sampling_rate="$(arg rdt_sampling_rate)" 
+      sensor_type="$(arg sensor_type)" 
+      internal_filter_rate="$(arg internal_filter_rate)" 
+      use_hardware_biasing="$(arg use_hardware_biasing)">
+      <!-- Create link fixed to the "world" -->
+      <link name="world" />
+    </xacro:net_ft_sensor>
+  </xacro:unless>
 </robot>
