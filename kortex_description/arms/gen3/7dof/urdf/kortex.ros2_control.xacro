@@ -198,6 +198,16 @@
     </ros2_control>
   </xacro:macro>
 
+<!-- Define an updated "tool_frame1" relative to the "tool_frame" to correctly offset the F/T-->
+    <xacro:property name="frame_offset" value="-0.004"/>
+      <link name="${prefix}tool_frame1"/>
+      <joint name="${prefix}tool_frame_joint1" type="fixed">
+        <origin xyz="0 0 ${frame_offset}" rpy="0 0 0" />
+        <parent link="tool_frame" />
+        <child link="tool_frame1" />
+        <axis xyz="0 0 0" />
+      </joint>
+
   <!-- Net FT args -->
   <xacro:arg name="sensor_type" default="ati"/>
   <xacro:arg name="ip_address" default="192.168.1.84"/>
@@ -211,7 +221,8 @@
  
   <!-- Force Sensor: Allow the F/T sensor data to be available to both the sim and real hardware -->
   <xacro:unless value="${fake_sensor_commands}">
-    <xacro:net_ft_sensor parent="end_effector_link" 
+    <xacro:net_ft_sensor 
+      parent="tool_frame1"
       prefix="$(arg prefix)" 
       ip_address="$(arg ip_address)" 
       rdt_sampling_rate="$(arg rdt_sampling_rate)" 
