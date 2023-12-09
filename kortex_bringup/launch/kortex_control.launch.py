@@ -13,6 +13,7 @@
 # limitations under the License.
 #
 # Authors: Marq Rasmussen, Denis Stogl
+# Edited: Emmanuel Akita
 
 from launch import LaunchDescription
 from launch.actions import (
@@ -51,10 +52,17 @@ def launch_setup(context, *args, **kwargs):
     robot_traj_controller = LaunchConfiguration("robot_controller")
     robot_pos_controller = LaunchConfiguration("robot_pos_controller")
     robot_hand_controller = LaunchConfiguration("robot_hand_controller")
+    robot_admittance_controller = LaunchConfiguration("robot_admittance_controller")
     fault_controller = LaunchConfiguration("fault_controller")
     launch_rviz = LaunchConfiguration("launch_rviz")
     use_internal_bus_gripper_comm = LaunchConfiguration("use_internal_bus_gripper_comm")
     gripper_joint_name = LaunchConfiguration("gripper_joint_name")
+    # Netft arguments
+    ip_address = LaunchConfiguration("ip_address")
+    rdt_sampling_rate = LaunchConfiguration("rdt_sampling_rate")
+    sensor_type = LaunchConfiguration("sensor_type")
+    internal_filter_rate = LaunchConfiguration("internal_filter_rate")
+    use_hardware_biasing = LaunchConfiguration("use_hardware_biasing")
 
     robot_description_content = Command(
         [
@@ -99,6 +107,22 @@ def launch_setup(context, *args, **kwargs):
             " ",
             "gripper_joint_name:=",
             gripper_joint_name,
+            " ",
+            # Netft arguments
+            "ip_address:=",
+            ip_address,
+            " ",
+            "rdt_sampling_rate:=",
+            rdt_sampling_rate,
+            " ",
+            "sensor_type:=",
+            sensor_type,
+            " ",
+            "internal_filter_rate:=",
+            internal_filter_rate,
+            " ",
+            "use_hardware_biasing:=",
+            use_hardware_biasing,
             " ",
         ]
     )
@@ -177,6 +201,34 @@ def launch_setup(context, *args, **kwargs):
         condition=IfCondition(use_internal_bus_gripper_comm),
     )
 
+    robot_admittance_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=[
+            robot_admittance_controller,
+            "--inactive",
+            "-c",
+            "/controller_manager",
+        ],
+    )
+
+    force_torque_sensor_broadcaster_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=[
+            "force_torque_sensor_broadcaster",
+            "--controller-manager",
+            "controller_manager",
+        ],
+    )
+
+    faked_forces_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        # condition=IfCondition(fake_sensor_commands),
+        arguments=["faked_forces_controller", "-c", "/controller_manager"],
+    )
+
     fault_controller_spawner = Node(
         package="controller_manager",
         executable="spawner",
@@ -191,6 +243,9 @@ def launch_setup(context, *args, **kwargs):
         robot_traj_controller_spawner,
         robot_pos_controller_spawner,
         robot_hand_controller_spawner,
+        robot_admittance_controller_spawner,
+        force_torque_sensor_broadcaster_spawner,
+        faked_forces_controller_spawner,
         fault_controller_spawner,
     ]
 
@@ -202,7 +257,9 @@ def generate_launch_description():
     # Robot specific arguments
     declared_arguments.append(
         DeclareLaunchArgument(
-            "robot_type", description="Type/series of robot.", choices=["gen3", "gen3_lite"]
+            "robot_type",
+            description="Type/series of robot.",
+            choices=["gen3", "gen3_lite"],
         )
     )
     declared_arguments.append(DeclareLaunchArgument("dof", description="DoF of robot."))
@@ -331,13 +388,22 @@ def generate_launch_description():
     )
     declared_arguments.append(
         DeclareLaunchArgument(
+            "robot_admittance_controller",
+            default_value="admittance_controller",
+            description="Robot controller to start.",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
             "fault_controller",
             default_value="fault_controller",
             description="Name of the 'fault controller.",
         )
     )
     declared_arguments.append(
-        DeclareLaunchArgument("launch_rviz", default_value="true", description="Launch RViz?")
+        DeclareLaunchArgument(
+            "launch_rviz", default_value="true", description="Launch RViz?"
+        )
     )
     declared_arguments.append(
         DeclareLaunchArgument(
@@ -367,5 +433,45 @@ def generate_launch_description():
             description="Max force for gripper commands",
         )
     )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            name="sensor_type",
+            default_value="ati",
+            description="Type of the F/T sensor.",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            name="ip_address",
+            default_value="192.168.1.84",
+            description="F/T Sensor IP adress",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            name="rdt_sampling_rate",
+            default_value="500",
+            description="The RDT sampling rate.",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            name="internal_filter_rate",
+            default_value="0",
+            description=(
+                "The internal low pass filter rate, "
+                "refer for specific values to the sensor manuals.",
+            ),
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            name="use_hardware_biasing",
+            default_value="false",
+            description="Whether to use built-in sensor zeroing",
+        )
+    )
 
-    return LaunchDescription(declared_arguments + [OpaqueFunction(function=launch_setup)])
+    return LaunchDescription(
+        declared_arguments + [OpaqueFunction(function=launch_setup)]
+    )

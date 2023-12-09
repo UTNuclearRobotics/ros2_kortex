@@ -108,7 +108,7 @@ If the bug fix you need isn't in a released version or If you want to build this
 3. Pull relevant packages, install dependencies, compile, and source the workspace by using:
    ```
    cd $COLCON_WS
-   git clone https://github.com/PickNikRobotics/ros2_kortex.git src/ros2_kortex
+   git clone --branch add_controllers https://github.com/UTNuclearRobotics/ros2_kortex.git src/ros2_kortex
    rosdep install --ignore-src --from-paths src -y -r
    colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release
    source install/setup.bash
@@ -116,11 +116,54 @@ If the bug fix you need isn't in a released version or If you want to build this
 
 4. To simulate the robot with ignition or gazebo make sure to pull and build additional packages:
    ```
-   vcs import src --skip-existing --input src/ros2_kortex/simulation.repos
+   # For ros-humble, run:
+    vcs import src --skip-existing --input src/ros2_kortex/simulation.humble.repos 
+
+   # For other ros2 distros, run: 
+    vcs import src --skip-existing --input src/ros2_kortex/simulation.repos 
+
+   # Build packages:
    rosdep install --ignore-src --from-paths src -y -r
    colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release
    source install/setup.bash
    ```
+   
+5. To run the robot with an admittance controller in simulation, there are 2 main methods. Method 1 dynamically loads a dedicated ati-ft hardware interface at runtime to interact with the admittance controller, and works for both the physcial robot and the simulated visualized robot. Method 2 uses the generic, mock hardware interface to interact with the admittance controller. The drawback of method 1 is that it requires a non-trivial hardware interface to be written for every sensor, but has the advantage of interfacing easily with the physical hardware. The drawback of method 2 is that it has the difficulty interfacing with the physical hardware, but is trivial for quickly prototyping and testing a (new) force-torque sensor in simulation. Pick the appropriate method based on your needs. 
+
+    To use method 1, pull and build additional packages: 
+      ```
+        cd $COLCON_WS/src
+        git clone --branch humble https://github.com/gbartyzel/ros2_net_ft_driver.git
+        sudo apt install -y libasio-dev libcurlpp-dev
+        cd $COLCON_WS
+        rosdep install --ignore-src --from-paths src -y -r --rosdistro humble
+
+        # Build packages:
+        colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release
+        source install/setup.bash
+      ```
+
+    To use method 2, pull and build additional packages:   
+      ```
+        vcs import src --skip-existing --input src/ros2_kortex/ft_pub.repos 
+        sudo apt-get install libedit-dev libncurses5
+
+        # Delete the default control_demos package that comes from initial build
+        rm -rf ros2_control_demos/
+      ```
+
+    Now, pull and build the admittance controller. 
+      ```
+        cd $COLCON_WS/src
+        wget https://raw.githubusercontent.com/pac48/ros2_control_demos/add-admittance-controller/admittance_demo/admittance_controller.repos
+        vcs import --input admittance_controller.repos .
+        cd $COLCON_WS
+        rosdep install --from-paths . -y -i --ignore-src
+
+        # Build packages:
+        colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release
+        source install/setup.bash
+        ```
 
 ## Simulation Issues
 
@@ -213,6 +256,35 @@ and to use MoveIt to command the robot:
 ```bash
 ros2 launch kinova_gen3_7dof_robotiq_2f_85_moveit_config sim.launch.py \
   use_sim_time:=true
+```
+
+To run the admittance controller using method 1, launch the robot with the following args
+```bash 
+  # Use the physical Net F/T sensor in simulation
+  fake_sensor_commands:=false 
+  ip_address:=<your-netbox-ip>
+  use_fake_hardware:=true
+
+  # Use the physical F/T on the real hardware 
+  fake_sensor_commands:=false 
+  ip_address:=<your-netbox-ip>
+  use_fake_hardware:=false
+
+  # Use a simulated wrench node in simulation. You will have to launch your own node, or perhaps use a node that publishes F/T data on a /faked_forces_controller/commands topic
+  fake_sensor_commands:=true 
+  ip_address:=<your-netbox-ip>
+  use_fake_hardware:=true
+```
+
+and activate the admittance controller:
+```bash
+ros2 control switch_controllers --activate admittance_controller --deactivate joint_trajectory_controller
+```
+
+To run the simulation using method 2 with the admittance controller, use the appropriate args above to launch the robot, activate the admittance controller (above), and launch the ati force-torque sensor as follows:
+
+```bash 
+ros2 launch ati_ft_sensor ati_ft_sensor.launch.py
 ```
 
 To work with a physical robot and generate/execute paths with MoveIt run the following:
