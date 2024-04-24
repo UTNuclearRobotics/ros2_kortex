@@ -57,7 +57,8 @@ def launch_setup(context, *args, **kwargs):
     use_internal_bus_gripper_comm = LaunchConfiguration("use_internal_bus_gripper_comm")
     gripper_joint_name = LaunchConfiguration("gripper_joint_name")
     force_torque_sensor_broadcaster = LaunchConfiguration("force_torque_sensor_broadcaster")
-
+    robot_admittance_controller = LaunchConfiguration("robot_admittance_controller")
+    
     #Robotiq FTS args
     use_fake_mode=LaunchConfiguration("use_fake_mode")
     use_add_fts_wrench=LaunchConfiguration("use_add_fts_wrench")
@@ -221,6 +222,17 @@ def launch_setup(context, *args, **kwargs):
         arguments=[force_torque_sensor_broadcaster,"-c", "/controller_manager"],
     )
 
+    robot_admittance_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=[
+            robot_admittance_controller,
+            "--inactive",
+            "-c",
+            "/controller_manager",
+        ],
+    )
+
     nodes_to_start = [
         control_node,
         robot_state_publisher_node,
@@ -231,6 +243,7 @@ def launch_setup(context, *args, **kwargs):
         robot_hand_controller_spawner,
         fault_controller_spawner,
         force_torque_sensor_broadcaster_spawner,
+        robot_admittance_controller_spawner,
     ]
 
     return nodes_to_start
@@ -455,5 +468,13 @@ def generate_launch_description():
             description="Name of the force_torque_sensor_broadcaster.",
         )
     )    
+    
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "robot_admittance_controller",
+            default_value="admittance_controller",
+            description="Robot controller to start.",
+        )
+    )
 
     return LaunchDescription(declared_arguments + [OpaqueFunction(function=launch_setup)])
