@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-
+#gen3_macro.xacro
 <robot name="gen3_arm" xmlns:xacro="http://ros.org/wiki/xacro">
 
   <!-- Propagate last link name information because it is the gripper's parent link -->
