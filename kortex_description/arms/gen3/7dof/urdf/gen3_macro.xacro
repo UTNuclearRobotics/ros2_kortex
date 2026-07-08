@@ -379,6 +379,12 @@
           <mesh filename="file://$(find kortex_description)/arms/gen3/${dof}dof/meshes/bracelet_with_vision_link.dae" />
         </geometry>
       </collision>
+      <collision>
+        <origin xyz="0.0 -0.03 -0.065" rpy="0 0 0"/>
+        <geometry>
+          <box size="0.12 0.12 0.05"/>
+        </geometry>
+      </collision>
     </link>
     </xacro:if>
     <xacro:unless value="${vision}">
@@ -401,6 +407,12 @@
         <origin xyz="0 0 0" rpy="0 0 0" />
         <geometry>
           <mesh filename="file://$(find kortex_description)/arms/gen3/${dof}dof/meshes/bracelet_no_vision_link.dae" />
+        </geometry>
+      </collision>
+       <collision>
+        <origin xyz="0.03 0.00 0.01" rpy="0 0 0"/>
+        <geometry>
+          <box size="0.4 0.4 0.4"/>
         </geometry>
       </collision>
     </link>
