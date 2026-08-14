@@ -1,10 +1,10 @@
-# ROS 2 Kortex
-> Kinova® Kortex™ is the common software platform behind all of the products in the Gen3 family (Gen3 and Gen3 lite). It unifies the inner workings of the various robots and their related external tools, like the API. <br />
+# ROS 2 KINOVA KORTEX™
+> Kinova® KINOVA KORTEX™ is the common software platform behind all of the products in the Gen3 family (Gen3 and Gen3 lite). It unifies the inner workings of the various robots and their related external tools, like the API. <br />
 > https://www.kinovarobotics.com/product/gen3-robots
 
 <center><img src="doc/resources/kinova-gen3-7dof-robotiq-2f-85.jpg" alt="Kinova Gen3 7DoF manipulator with Intel RealSense 3D Vision Module and Robotiq 2F-85 2 Finger 85mm Adaptive Gripper" style="width: 50%"/></center>
 
-ROS2 Kortex is the official ROS2 package to interact with Kortex and its related products. It is built upon the Kortex API, documentation for which can be found in the [GitHub Kortex repository](https://github.com/Kinovarobotics/kortex).
+ROS2 KINOVA KORTEX™ is the official ROS2 package to interact with KINOVA KORTEX™ and its related products. It is built upon the KINOVA KORTEX™ API, documentation for which can be found in the [GitHub Kortex repository](https://github.com/Kinovarobotics/kortex).
 
 ## Build status
 
@@ -13,22 +13,45 @@ ROS2 Kortex is the official ROS2 package to interact with Kortex and its related
     <th>ROS 2 Distro</th>
     <th>Humble</th>
     <th>Jazzy</th>
+    <th>Rolling</th>
   </tr>
   <tr>
     <th>Branch</th>
     <td><a href="https://github.com/Kinovarobotics/ros2_kortex/tree/humble">humble</a></td>
+    <td><a href="https://github.com/Kinovarobotics/ros2_kortex/tree/jazzy">jazzy</a></td>
     <td><a href="https://github.com/Kinovarobotics/ros2_kortex/tree/main">main</a></td>
   </tr>
   <tr>
     <th>Build Status</th>
     <td>
       <a href="https://github.com/Kinovarobotics/ros2_kortex/actions/workflows/humble-binary-build.yml">
-        <img src="https://github.com/PickNikRobotics/ros2_kortex/actions/workflows/humble-binary-build.yml/badge.svg?event=push&branch=main" alt="Humble Binary Build"/>
+        <img src="https://github.com/Kinovarobotics/ros2_kortex/actions/workflows/humble-binary-build.yml/badge.svg?event=push&branch=humble" alt="Humble Binary Build"/>
+      </a>
+      <br/>
+      <a href="https://github.com/Kinovarobotics/ros2_kortex/actions/workflows/humble-source-build.yml">
+        <img src="https://github.com/Kinovarobotics/ros2_kortex/actions/workflows/humble-source-build.yml/badge.svg?event=push&branch=humble" alt="Humble Source Build"/>
+      </a>
+    </td>
+    <td>
+      <a href="https://github.com/Kinovarobotics/ros2_kortex/actions/workflows/jazzy-binary-build.yml">
+        <img src="https://github.com/Kinovarobotics/ros2_kortex/actions/workflows/jazzy-binary-build.yml/badge.svg?event=push&branch=jazzy" alt="Jazzy Binary Build"/>
+      </a>
+      <br/>
+      <a href="https://github.com/Kinovarobotics/ros2_kortex/actions/workflows/jazzy-source-build.yml">
+        <img src="https://github.com/Kinovarobotics/ros2_kortex/actions/workflows/jazzy-source-build.yml/badge.svg?event=push&branch=jazzy" alt="Jazzy Source Build"/>
       </a>
     </td>
     <td>
       <a href="https://github.com/Kinovarobotics/ros2_kortex/actions/workflows/rolling-binary-build.yml">
-        <img src="https://github.com/PickNikRobotics/ros2_kortex/actions/workflows/rolling-binary-build.yml/badge.svg?event=push&branch=main" alt="Rolling Binary Build"/>
+        <img src="https://github.com/Kinovarobotics/ros2_kortex/actions/workflows/rolling-binary-build.yml/badge.svg?event=push&branch=main" alt="Rolling Binary Build"/>
+      </a>
+      <br/>
+      <a href="https://github.com/Kinovarobotics/ros2_kortex/actions/workflows/rolling-semi-binary-build.yml">
+        <img src="https://github.com/Kinovarobotics/ros2_kortex/actions/workflows/rolling-semi-binary-build.yml/badge.svg?event=push&branch=main" alt="Rolling Semi-Binary Build"/>
+      </a>
+      <br/>
+      <a href="https://github.com/Kinovarobotics/ros2_kortex/actions/workflows/rolling-source-build.yml">
+        <img src="https://github.com/Kinovarobotics/ros2_kortex/actions/workflows/rolling-source-build.yml/badge.svg?event=push&branch=main" alt="Rolling Source Build"/>
       </a>
     </td>
   </tr>
@@ -36,6 +59,7 @@ ROS2 Kortex is the official ROS2 package to interact with Kortex and its related
     <th>Release Status</th>
     <td>Stable (binary available — may lag behind source)<!-- TODO(moriarty) add build.ros2.org status badge once released --></td>
     <td>Stable (source only)<!-- TODO(moriarty) add build.ros2.org status badge once released --></td>
+    <td>Unstable (source only)</td>
   </tr>
 </table>
 
@@ -467,7 +491,7 @@ This metapackage contains the auto-generated MoveIt! files to use the Kinova Gen
 
 1. Make sure to connect each robotic arm via an Ethernet connection, and assign each arm to a different IP subnet (for example, one at 192.168.1.10 and the other at 192.168.2.10).
 
-2. Start the dual control launch file using the following command: 
+2. Start the dual control launch file using the following command:
 
 ```
 ros2 launch kortex_bringup gen3_dual.launch.py robot_ip_1:=192.168.1.10 robot_ip_2:=192.168.2.10

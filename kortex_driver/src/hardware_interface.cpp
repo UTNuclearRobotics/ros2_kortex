@@ -239,7 +239,6 @@ CallbackReturn KortexMultiInterfaceHardware::on_init(const hardware_interface::H
     // command.set_duration = execute time (milliseconds) according to the api ->
     // (not implemented yet)
     // see: https://github.com/Kinovarobotics/kortex/blob/master/api_cpp/doc/markdown/messages/Base/TwistCommand.md
-    k_api_twist_command_.set_duration(0);
     k_api_twist_ = k_api_twist_command_.mutable_twist();
   }
 
@@ -310,7 +309,6 @@ KortexMultiInterfaceHardware::export_state_interfaces()
     RCLCPP_DEBUG(LOGGER, "export_state_interfaces for joint: %s", info_.joints[i].name.c_str());
     if (info_.joints[i].name == gripper_joint_name_)
     {
-      
       state_interfaces.emplace_back(hardware_interface::StateInterface(
         info_.joints[i].name, hardware_interface::HW_IF_POSITION, &gripper_position_));
       state_interfaces.emplace_back(hardware_interface::StateInterface(
@@ -318,7 +316,6 @@ KortexMultiInterfaceHardware::export_state_interfaces()
     }
     else
     {
-      
       arm_joint_names.emplace_back(info_.joints[i].name);
     }
   }
@@ -815,7 +812,7 @@ void KortexMultiInterfaceHardware::readGripperPosition()
   {
     gripper_position_ =
       feedback_.interconnect().gripper_feedback().motor()[0].position() / 100.0 * 0.81;  // rad
-      // DEBUGGING: this function seems to return the correct gripper posi, so issue is not here
+    // DEBUGGING: this function seems to return the correct gripper posi, so issue is not here
   }
 }
 
